@@ -5,7 +5,6 @@
 package com.challstrom.fs;
 
 import java.io.*;
-import java.util.Scanner;
 
 /**
  * Created by tchallst on 9/14/2016.
@@ -38,19 +37,15 @@ public class MainController {
 
 
     private static String readFile(String fileName) {
-        String line = null;
         String out = "";
 
         try {
-            byte[] buffer = new byte[1000];
+            byte[] buffer = new byte[100000];
 
             FileInputStream inputStream =
                     new FileInputStream(fileName);
-            int total = 0;
-            int nRead = 0;
-            while((nRead = inputStream.read(buffer)) != -1) {
+            while (inputStream.read(buffer) != -1) {
                 out+=new String(buffer);
-                total += nRead;
             }
             inputStream.close();
         }

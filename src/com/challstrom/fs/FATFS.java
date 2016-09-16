@@ -5,15 +5,14 @@
 package com.challstrom.fs;
 
 import java.util.Arrays;
-import java.util.LinkedList;
 
 /**
  * Created by tchallst on 9/14/2016.
  * 3335FS / com.challstrom.fs
  */
-public class FATFS {
-    public static final int ALLOCATION_UNIT_SIZE = 256;
-    public static final int BLOCK_CAPACITY = 256;
+class FATFS {
+    static final int ALLOCATION_UNIT_SIZE = 256;
+    private static final int BLOCK_CAPACITY = 2048;
 
     private FileInfo[] FileInfos = new FileInfo[BLOCK_CAPACITY];
     private int[] BlockInfo = new int[BLOCK_CAPACITY];
@@ -21,21 +20,20 @@ public class FATFS {
     private int BlocksAvailable = BLOCK_CAPACITY;
 
     boolean write(String filename, String inputString) {
-        String[] inputBlocks= FileParsingUtilities.covertToBlocks(inputString);
+        String[] inputBlocks = FileParsingUtilities.covertToBlocks(inputString);
         int next = getNextAvailableBlock(-1);
         int firstBlock = next;
-        for (int i = 0; i < inputBlocks.length; i++) {
-             if(next < 0) {
+        for (String inputBlock : inputBlocks) {
+            if (next < 0) {
                 System.err.println("ERROR! No Blocks Available! Please use a smaller file, or increase the Block Capacity!");
                 return false;
             }
-            Blocks[next] = inputBlocks[i];
+            Blocks[next] = inputBlock;
             BlockInfo[next] = getNextAvailableBlock(next);
             next = getNextAvailableBlock(next);
             BlocksAvailable--;
         }
         BlockInfo[next] = -1;
-        //TODO For some reason the last block isn't writing
         FileInfo fileInfo = new FileInfo(filename, firstBlock);
         FileInfos[firstBlock] = fileInfo;
         return true;
@@ -43,7 +41,7 @@ public class FATFS {
 
     String read(String filename) {
         if (!Arrays.asList(FileInfos).contains(new FileInfo(filename, -1))) {
-            System.err.println("ERROR! The File "+filename+" does not exist!");
+            System.err.println("ERROR! The File " + filename + " does not exist!");
             return null;
         }
         String output = "";
@@ -76,50 +74,46 @@ public class FATFS {
     }
 
     private boolean getBlock(int blockInfoIndex, String[] blocks, int depth) {
-        switch (blockInfoIndex){
+        switch (blockInfoIndex) {
             case -2:
-                System.err.println("CORRUPTED BLOCK AT: "+blockInfoIndex);
+                System.err.println("CORRUPTED BLOCK AT: " + blockInfoIndex);
                 return false;
             case -1:
                 return true;
             default:
                 blocks[depth] = this.Blocks[blockInfoIndex];
-                if (this.BlockInfo[blockInfoIndex]<0) {
-                    blocks[depth+1] = this.Blocks[blockInfoIndex];
+                if (this.BlockInfo[blockInfoIndex] < 0) {
+                    blocks[depth + 1] = this.Blocks[blockInfoIndex];
                     return true;
                 }
-                return getBlock(this.BlockInfo[blockInfoIndex], blocks, depth+1);
+                return getBlock(this.BlockInfo[blockInfoIndex], blocks, depth + 1);
         }
     }
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("FATFS{"+"\n\t");
-        sb.append("FileInfos=").append(Arrays.toString(FileInfos)+"");
-        sb.append(", \n\tBlockInfo=").append(Arrays.toString(BlockInfo));
-        sb.append(", \n\tBlocks=").append(Arrays.toString(Blocks));
-        sb.append(", \n\tBlocksAvailable=").append(BlocksAvailable);
-        sb.append("\n}");
-        return sb.toString();
+        return "FATFS{" + "\n\t" + "FileInfos=" + Arrays.toString(FileInfos) + "" +
+                ", \n\tBlockInfo=" + Arrays.toString(BlockInfo) +
+                ", \n\tBlocks=" + Arrays.toString(Blocks) +
+                ", \n\tBlocksAvailable=" + BlocksAvailable +
+                "\n}";
     }
 }
 
 class FileInfo {
-    String filename;
     int blockStart;
+    private String filename;
 
-    public FileInfo(String filename, int blockStart) {
+    FileInfo(String filename, int blockStart) {
         this.filename = filename;
         this.blockStart = blockStart;
     }
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("FileInfo{");
-        sb.append("filename='").append(filename).append('\'');
-        sb.append(", blockStart=").append(blockStart);
-        sb.append('}');
-        return sb.toString();
+        return "FileInfo{" + "filename='" + filename + '\'' +
+                ", blockStart=" + blockStart +
+                '}';
     }
 
     @Override
