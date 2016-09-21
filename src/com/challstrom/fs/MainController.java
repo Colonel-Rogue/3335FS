@@ -60,6 +60,9 @@ class MainGUI {
 
         JButton openFile = new JButton("Read File into buffer");
         JButton writeBuffer = new JButton("Write Buffer to FATFS");
+        frame.getContentPane().add(openFile);
+        frame.getContentPane().add(writeBuffer);
+        frame.setVisible(true);
     }
 
     private void openFile() {
@@ -69,11 +72,11 @@ class MainGUI {
         if (returnValue == JFileChooser.APPROVE_OPTION) {
             file = fileChooser.getSelectedFile();
         }
-        InterfaceUtilities.readFile(file);
+        ControllerUtilities.readFile(file);
     }
 }
 
-class InterfaceUtilities {
+class ControllerUtilities {
     static String readFile(File file) {
         String line = null;
         String out = "";
