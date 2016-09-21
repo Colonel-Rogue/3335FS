@@ -11,13 +11,18 @@ import java.util.Arrays;
  * 3335FS / com.challstrom.fs
  */
 class FATFS {
-    static final int ALLOCATION_UNIT_SIZE = 256;
-    private static final int BLOCK_CAPACITY = 2048;
+    private int ALLOCATION_UNIT_SIZE;
+    private int BLOCK_CAPACITY;
 
     private FileInfo[] FileInfos = new FileInfo[BLOCK_CAPACITY];
     private int[] BlockInfo = new int[BLOCK_CAPACITY];
     private String[] Blocks = new String[BLOCK_CAPACITY];
     private int BlocksAvailable = BLOCK_CAPACITY;
+
+    FATFS(int ALLOCATION_UNIT_SIZE, int BLOCK_CAPACITY) {
+        this.ALLOCATION_UNIT_SIZE = ALLOCATION_UNIT_SIZE;
+        this.BLOCK_CAPACITY = BLOCK_CAPACITY;
+    }
 
     boolean write(String filename, String inputString) {
         String[] inputBlocks = FileParsingUtilities.covertToBlocks(inputString);

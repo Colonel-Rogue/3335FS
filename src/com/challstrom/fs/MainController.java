@@ -4,7 +4,10 @@
 
 package com.challstrom.fs;
 
+import javax.swing.*;
+import java.awt.*;
 import java.io.*;
+import java.text.NumberFormat;
 
 /**
  * Created by tchallst on 9/14/2016.
@@ -12,59 +15,92 @@ import java.io.*;
  */
 public class MainController {
     public static void main(String[] args) {
-
-        String inputsam = readFile("7oldsamr.txt");
-        String inputCV = readFile("cv.txt");
-
-        //Num
-        String numString = "";
-        for (int i = 0; i < 300; i++) {
-            numString += i;
-        }
-
-        FATFS filesystem = new FATFS();
-        filesystem.write("numbers.txt", numString);
-        filesystem.write("cv.txt", inputCV);
-        filesystem.write("sam.txt", inputsam);
-        System.out.println(filesystem);
-
-        //Now Let's spit it back out
-        writeFile("sam-OUTPUT.txt",filesystem.read("sam.txt"));
-        writeFile("cv-OUTPUT.txt",filesystem.read("cv.txt"));
-        writeFile("numbers-OUTPUT.txt",filesystem.read("numbers.txt"));
+        MainGUI mainGUI = new MainGUI();
+        mainGUI.showMainGUI();
     }
 
 
+}
 
-    private static String readFile(String fileName) {
+class MainGUI {
+    private FATFS fatfs;
+    private JFrame frame;
+    private String buffer;
+
+    void showMainGUI() {
+        JFrame.setDefaultLookAndFeelDecorated(true);
+        JDialog.setDefaultLookAndFeelDecorated(true);
+        frame = new JFrame("FATFS");
+        frame.setLayout(new FlowLayout());
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        JButton button = new JButton("Create New FATFS Instance");
+        JTextField allocationField = new JTextField("256");
+        JTextField capacityField = new JTextField("256");
+        JLabel allocationLabel = new JLabel("Allocation Unit Size: ");
+        JLabel capacityLabel = new JLabel("Block Capacity: ");
+
+        frame.add(allocationLabel);
+        frame.add(allocationField);
+        frame.add(capacityLabel);
+        frame.add(capacityField);
+        frame.add(button);
+        frame.pack();
+
+        button.addActionListener(e -> showFATFS(Integer.parseInt(allocationField.getText()), Integer.parseInt(capacityField.getText())));
+
+        frame.setVisible(true);
+
+    }
+
+    private void showFATFS(int allocationUnitSize, int blockCapacity) {
+        frame.getContentPane().removeAll();
+        System.out.println(allocationUnitSize);
+        System.out.println(blockCapacity);
+        fatfs = new FATFS(allocationUnitSize, blockCapacity);
+
+        JButton openFile = new JButton("Read File into buffer");
+        JButton writeBuffer = new JButton("Write Buffer to FATFS");
+    }
+
+    private void openFile() {
+        JFileChooser fileChooser = new JFileChooser(new File(System.getProperty("user.dir")));
+        File file = null;
+        int returnValue = fileChooser.showOpenDialog(null);
+        if (returnValue == JFileChooser.APPROVE_OPTION) {
+            file = fileChooser.getSelectedFile();
+        }
+        InterfaceUtilities.readFile(file);
+    }
+}
+
+class InterfaceUtilities {
+    static String readFile(File file) {
+        String line = null;
         String out = "";
 
         try {
-            byte[] buffer = new byte[100000];
+            byte[] buffer = new byte[(int) file.length()];
 
             FileInputStream inputStream =
-                    new FileInputStream(fileName);
-            while (inputStream.read(buffer) != -1) {
-                out+=new String(buffer);
+                    new FileInputStream(file);
+            int total = 0;
+            int nRead = 0;
+            while ((nRead = inputStream.read(buffer)) != -1) {
+                out += new String(buffer);
+                total += nRead;
             }
             inputStream.close();
-        }
-        catch(FileNotFoundException ex) {
+        } catch (FileNotFoundException ex) {
             System.out.println(
-                    "Unable to open file '" +
-                            fileName + "'");
-        }
-        catch(IOException ex) {
+                    "Unable to open file '" + file.getName() + "'");
+        } catch (IOException ex) {
             System.out.println(
-                    "Error reading file '"
-                            + fileName + "'");
-            // Or we could just do this:
-            // ex.printStackTrace();
+                    "Error reading file '" + file.getName() + "'");
         }
         return out;
     }
 
-    private static void writeFile(String filename, String data) {
+    static void writeFile(String filename, String data) {
         try (Writer writer = new BufferedWriter(new OutputStreamWriter(
                 new FileOutputStream(filename), "utf-8"))) {
             writer.write(data);
@@ -72,5 +108,29 @@ public class MainController {
             e.printStackTrace();
         }
     }
-}
 
+    static void getResourceUsage() {
+        Runtime runtime = Runtime.getRuntime();
+
+        NumberFormat format = NumberFormat.getInstance();
+
+        StringBuilder sb = new StringBuilder();
+        long maxMemory = runtime.maxMemory();
+        long allocatedMemory = runtime.totalMemory();
+        long freeMemory = runtime.freeMemory();
+
+        sb.append("free memory: ").append(humanReadableByteCount(freeMemory, true)).append("\n");
+        sb.append("allocated memory: ").append(humanReadableByteCount(allocatedMemory, true)).append("\n");
+        sb.append("max memory: ").append(humanReadableByteCount(maxMemory, true)).append("\n");
+        sb.append("total free memory: ").append(humanReadableByteCount(freeMemory + (maxMemory - allocatedMemory), true)).append("\n");
+        System.out.println(sb);
+    }
+
+    private static String humanReadableByteCount(long bytes, boolean si) {
+        int unit = si ? 1000 : 1024;
+        if (bytes < unit) return bytes + " B";
+        int exp = (int) (Math.log(bytes) / Math.log(unit));
+        String pre = (si ? "kMGTPE" : "KMGTPE").charAt(exp - 1) + (si ? "" : "i");
+        return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
+    }
+}
