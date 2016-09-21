@@ -25,7 +25,7 @@ class FATFS {
     }
 
     boolean write(String filename, String inputString) {
-        String[] inputBlocks = FileParsingUtilities.covertToBlocks(inputString);
+        String[] inputBlocks = FileParsingUtilities.covertToBlocks(ALLOCATION_UNIT_SIZE, inputString);
         int next = getNextAvailableBlock(-1);
         int firstBlock = next;
         for (String inputBlock : inputBlocks) {
