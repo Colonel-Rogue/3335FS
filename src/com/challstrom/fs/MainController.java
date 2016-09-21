@@ -32,8 +32,8 @@ class MainGUI {
         JDialog.setDefaultLookAndFeelDecorated(true);
         frame = new JFrame("FATFS");
         frame.setLayout(new FlowLayout());
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        JButton button = new JButton("Create New FATFS Instance");
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        JButton FATFSButton = new JButton("Create New FATFS Instance");
         JTextField allocationField = new JTextField("256");
         JTextField capacityField = new JTextField("256");
         JLabel allocationLabel = new JLabel("Allocation Unit Size: ");
@@ -43,10 +43,10 @@ class MainGUI {
         frame.add(allocationField);
         frame.add(capacityLabel);
         frame.add(capacityField);
-        frame.add(button);
+        frame.add(FATFSButton);
         frame.pack();
 
-        button.addActionListener(e -> showFATFS(Integer.parseInt(allocationField.getText()), Integer.parseInt(capacityField.getText())));
+        FATFSButton.addActionListener(e -> showFATFS(Integer.parseInt(allocationField.getText()), Integer.parseInt(capacityField.getText())));
 
         frame.setVisible(true);
 
@@ -60,6 +60,8 @@ class MainGUI {
 
         JButton openFile = new JButton("Read File into buffer");
         JButton writeBuffer = new JButton("Write Buffer to FATFS");
+
+
         frame.getContentPane().add(openFile);
         frame.getContentPane().add(writeBuffer);
         frame.setVisible(true);
@@ -87,7 +89,7 @@ class ControllerUtilities {
             FileInputStream inputStream =
                     new FileInputStream(file);
             int total = 0;
-            int nRead = 0;
+            int nRead;
             while ((nRead = inputStream.read(buffer)) != -1) {
                 out += new String(buffer);
                 total += nRead;
