@@ -8,6 +8,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.*;
 import java.text.NumberFormat;
+import java.util.Objects;
 
 /**
  * Created by tchallst on 9/14/2016.
@@ -24,14 +25,18 @@ public class MainController {
 
 class MainGUI {
     private FATFS fatfs;
-    private JFrame frame;
     private String buffer;
+
+    //GUI Construction
+    private JFrame frame;
+    private JPanel blockAreaPanel;
+    private JTextArea[] blockAreas;
 
     void showMainGUI() {
         JFrame.setDefaultLookAndFeelDecorated(true);
         JDialog.setDefaultLookAndFeelDecorated(true);
         frame = new JFrame("FATFS");
-        frame.setLayout(new FlowLayout());
+        frame.setLayout(new GridLayout());
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         JButton FATFSButton = new JButton("Create New FATFS Instance");
         JTextField allocationField = new JTextField("256");
@@ -58,12 +63,34 @@ class MainGUI {
         System.out.println(blockCapacity);
         fatfs = new FATFS(allocationUnitSize, blockCapacity);
 
+        //Construction
         JButton openFile = new JButton("Read File into buffer");
         JButton writeBuffer = new JButton("Write Buffer to FATFS");
+        blockAreas = new JTextArea[blockCapacity];
+        blockAreaPanel = new JPanel(new GridLayout(16, 16, 1, 1));
 
-
+        //Add to components/frames
+        frame.getContentPane().setLayout(new FlowLayout());
         frame.getContentPane().add(openFile);
         frame.getContentPane().add(writeBuffer);
+        frame.getContentPane().add(blockAreaPanel);
+        //Create and add block areas
+        for (int i = 0; i < blockCapacity; i++) {
+            blockAreas[i] = new JTextArea(2, allocationUnitSize / 50);
+            blockAreas[i].setEditable(false);
+            blockAreaPanel.add(new JLabel("Block " + i));
+            blockAreaPanel.add(blockAreas[i]);
+        }
+        Dimension frameDimension = new Dimension();
+        frameDimension.setSize(frame.getContentPane().getPreferredSize().getWidth() + 10, frame.getContentPane().getPreferredSize().getHeight() + (100 * (blockCapacity / 256)));
+        frame.setSize(frameDimension);
+        frame.revalidate();
+
+        //Listeners
+        openFile.addActionListener(e -> openFile());
+        writeBuffer.addActionListener(e -> writeBufferToFATFS());
+
+        //final line
         frame.setVisible(true);
     }
 
@@ -74,7 +101,31 @@ class MainGUI {
         if (returnValue == JFileChooser.APPROVE_OPTION) {
             file = fileChooser.getSelectedFile();
         }
-        ControllerUtilities.readFile(file);
+        buffer = ControllerUtilities.readFile(file);
+    }
+
+    private void writeBufferToFATFS() {
+        if (fatfs == null) {
+            throw new RuntimeException("FATFS has not been initialized!");
+        }
+        if (Objects.equals(buffer, "")) {
+            System.err.println("Buffer is empty!");
+        }
+        fatfs.write("t1.txt", buffer);
+        updateFrame();
+    }
+
+    private void updateFrame() {
+        if (fatfs == null) {
+            throw new RuntimeException("FATFS has not been initialized!");
+        }
+        int blockCapacity = fatfs.getBLOCK_CAPACITY();
+        int allocationUnitSize = fatfs.getALLOCATION_UNIT_SIZE();
+        String[] blocks = fatfs.getBlocks();
+        for (int i = 0; i < blockCapacity; i++) {
+            blockAreas[i].setText("..." + blocks[i].substring(blocks[i].length() - 10, blocks[i].length() - 1));
+        }
+        frame.revalidate();
     }
 }
 

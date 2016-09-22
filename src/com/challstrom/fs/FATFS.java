@@ -14,14 +14,17 @@ class FATFS {
     private int ALLOCATION_UNIT_SIZE;
     private int BLOCK_CAPACITY;
 
-    private FileInfo[] FileInfos = new FileInfo[BLOCK_CAPACITY];
-    private int[] BlockInfo = new int[BLOCK_CAPACITY];
-    private String[] Blocks = new String[BLOCK_CAPACITY];
+    private FileInfo[] FileInfos;
+    private int[] BlockInfo;
+    private String[] Blocks;
     private int BlocksAvailable = BLOCK_CAPACITY;
 
     FATFS(int ALLOCATION_UNIT_SIZE, int BLOCK_CAPACITY) {
         this.ALLOCATION_UNIT_SIZE = ALLOCATION_UNIT_SIZE;
         this.BLOCK_CAPACITY = BLOCK_CAPACITY;
+        FileInfos = new FileInfo[BLOCK_CAPACITY];
+        BlockInfo = new int[BLOCK_CAPACITY];
+        Blocks = new String[BLOCK_CAPACITY];
     }
 
     boolean write(String filename, String inputString) {
@@ -93,6 +96,26 @@ class FATFS {
                 }
                 return getBlock(this.BlockInfo[blockInfoIndex], blocks, depth + 1);
         }
+    }
+
+    public FileInfo[] getFileInfos() {
+        return FileInfos;
+    }
+
+    public int[] getBlockInfo() {
+        return BlockInfo;
+    }
+
+    public String[] getBlocks() {
+        return Blocks;
+    }
+
+    public int getALLOCATION_UNIT_SIZE() {
+        return ALLOCATION_UNIT_SIZE;
+    }
+
+    public int getBLOCK_CAPACITY() {
+        return BLOCK_CAPACITY;
     }
 
     @Override
