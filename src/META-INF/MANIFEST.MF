@@ -1,0 +1,13 @@
+Manifest-Version: 1.1
+Created-By: 1.8.0_101
+Main-Class: com.challstrom.fs.MainController
+Name: com.challstrom.fs/FATFS
+Sealed: true
+Specification-Title: 3335FS
+Specification-Vendor: TJ Challstrom
+Implementation-Title: FATFS
+Implementation-Version: 1.0.0
+Implementation-Vendor: TJ Challstrom
+Implementation-URL: https://github.com/Colonel-Rogue/3335FS
+
+

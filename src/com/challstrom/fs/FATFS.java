@@ -14,12 +14,12 @@ import java.util.Objects;
  * 3335FS / com.challstrom.fs
  */
 class FATFS {
-    private int ALLOCATION_UNIT_SIZE;
-    private int BLOCK_CAPACITY;
+    private final int ALLOCATION_UNIT_SIZE;
+    private final int BLOCK_CAPACITY;
 
-    private FileInfo[] FileInfos;
-    private int[] BlockInfo;
-    private String[] Blocks;
+    private final FileInfo[] FileInfos;
+    private final int[] BlockInfo;
+    private final String[] Blocks;
     private int BlocksAvailable;
 
     FATFS(int ALLOCATION_UNIT_SIZE, int BLOCK_CAPACITY) {
@@ -123,7 +123,7 @@ class FATFS {
         }
     }
 
-    public FileInfo[] getFileInfos() {
+    FileInfo[] getFileInfos() {
         return FileInfos;
     }
 
@@ -131,19 +131,11 @@ class FATFS {
         return BlockInfo;
     }
 
-    public String[] getBlocks() {
+    String[] getBlocks() {
         return Blocks;
     }
 
-    public int getALLOCATION_UNIT_SIZE() {
-        return ALLOCATION_UNIT_SIZE;
-    }
-
-    public int getBLOCK_CAPACITY() {
-        return BLOCK_CAPACITY;
-    }
-
-    public int getBlocksUsed() {
+    int getBlocksUsed() {
         return ALLOCATION_UNIT_SIZE - BlocksAvailable;
     }
 
@@ -158,8 +150,8 @@ class FATFS {
 }
 
 class FileInfo {
-    int blockStart;
-    private String filename;
+    final int blockStart;
+    private final String filename;
 
     FileInfo(String filename, int blockStart) {
         this.filename = filename;
@@ -189,7 +181,7 @@ class FileInfo {
         return filename.hashCode();
     }
 
-    public int getBlockStart() {
+    int getBlockStart() {
         return blockStart;
     }
 
