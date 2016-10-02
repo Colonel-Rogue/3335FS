@@ -95,6 +95,8 @@ class MainGUI {
         for (int i = 0; i < blockCapacity; i++) {
             BlockAreas[i] = new JTextArea(2, allocationUnitSize / 50);
             BlockAreas[i].setEditable(false);
+            JScrollPane scrollPaneWrapper = new JScrollPane();
+            scrollPaneWrapper.add(BlockAreas[i]);
             blockAreaPanel.add(new JLabel("Block " + i));
             blockAreaPanel.add(BlockAreas[i]);
         }
@@ -103,8 +105,9 @@ class MainGUI {
         boundingPanel.setLayout(new GridLayout(5, 2));
         boundingPanel.setPreferredSize(new Dimension(5, 5));
         Dimension frameDimension = new Dimension();
-        frameDimension.setSize(Frame.getContentPane().getPreferredSize().getWidth(), Frame.getContentPane().getPreferredSize().getHeight() + (100 * (blockCapacity / 256)));
+        frameDimension.setSize(Frame.getContentPane().getPreferredSize().getWidth() - 512, Frame.getContentPane().getPreferredSize().getHeight() + (100 * (blockCapacity / 256)));
         Frame.setSize(frameDimension);
+        Frame.setResizable(false);
         blockInfoArea.setPreferredSize(new Dimension(100, Frame.getHeight()));
         Frame.revalidate();
 
