@@ -32,13 +32,17 @@ class FATFS {
     }
 
     boolean write(String filename, String inputString) {
+        if (Objects.equals(filename, null) || Objects.equals(inputString, null)) {
+            MainGUI.logError("File name invalid or tried to write empty buffer to FileSystem!");
+            return false;
+        }
         String[] inputBlocks = FilesystemUtilities.covertToBlocks(ALLOCATION_UNIT_SIZE, inputString);
         int next = getNextAvailableBlock(-1);
         int firstBlock = next;
         int last = -1;
         for (String inputBlock : inputBlocks) {
             if (next < 0) {
-                System.err.println("ERROR! No Blocks Available! Please use a smaller file, or increase the Block Capacity!");
+                MainGUI.logError("ERROR! No Blocks Available! Please use a smaller file, or increase the Block Capacity!");
                 return false;
             }
             Blocks[next] = inputBlock;
@@ -55,7 +59,7 @@ class FATFS {
 
     String read(String filename) {
         if (!Arrays.asList(FileInfos).contains(new FileInfo(filename, -1))) {
-            System.err.println("ERROR! The File " + filename + " does not exist!");
+            MainGUI.logError("ERROR! The File " + filename + " does not exist!");
             return null;
         }
         String output = "";
@@ -64,7 +68,7 @@ class FATFS {
         FileInfo fileInfo = FileInfos[fileInfoIndex];
         String[] blocks = new String[BLOCK_CAPACITY];
         if (!getBlock(fileInfo.blockStart, blocks, 0)) {
-            System.err.println("Could not read entire file! Some parts may be corrupted!");
+            MainGUI.logError("Could not read entire file! Some parts may be corrupted!");
         }
         int i = 0;
         do {
@@ -77,7 +81,7 @@ class FATFS {
     boolean drop(String filename) {
         int fileInfoIndex = FilesystemUtilities.fseek(filename, FileInfos);
         if (fileInfoIndex < 0) {
-            System.err.println("No file '" + filename + "' found!");
+            MainGUI.logError("No file '" + filename + "' found!");
             return false;
         }
         boolean dropped = freeBlock(FileInfos[fileInfoIndex].getBlockStart());
@@ -98,7 +102,7 @@ class FATFS {
             int info = BlockInfo[i];
             if (i == last) continue;
             if (info == -2) {
-                System.err.println("CORRUPTED BLOCK AT: " + info);
+                MainGUI.logError("CORRUPTED BLOCK AT: " + info);
             } else if (info == 0) {
                 return i;
             }
@@ -109,7 +113,7 @@ class FATFS {
     private boolean getBlock(int blockInfoIndex, String[] blocks, int depth) {
         switch (blockInfoIndex) {
             case -2:
-                System.err.println("CORRUPTED BLOCK AT: " + blockInfoIndex);
+                MainGUI.logError("CORRUPTED BLOCK AT: " + blockInfoIndex);
                 return false;
             case -1:
                 return true;

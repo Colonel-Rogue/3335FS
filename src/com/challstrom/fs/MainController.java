@@ -24,14 +24,18 @@ public class MainController {
 
 //TODO Clean up Class to allow for easier gui code readability
 class MainGUI {
+    private static JTextArea ErrorInfoArea;
     private FATFS Fatfs;
     private String Buffer;
     private String BufferPath;
-
     //GUI Construction
     private JFrame Frame;
     private JTextArea[] BlockAreas;
     private JComboBox<String> FileInfoArea;
+
+    static void logError(String error) {
+        ErrorInfoArea.setText("Error Log\n" + error);
+    }
 
     void showMainGUI() {
         //Setup and init for first window
@@ -73,11 +77,14 @@ class MainGUI {
         JButton writeBuffer = new JButton("Write Buffer to FATFS");
         JButton deleteFile = new JButton("Delete Selected File");
         JButton fileWriteButton = new JButton("Write from FATFS to file");
+        JButton dumpButton = new JButton("Dump FileSystem to File");
         JPanel boundingPanel = new JPanel();
         BlockAreas = new JTextArea[blockCapacity];
         JPanel blockAreaPanel = new JPanel(new GridLayout(24, 12, 2, 2));
         FileInfoArea = new JComboBox<>();
         JTextArea blockInfoArea = new JTextArea("Test");
+        ErrorInfoArea = new JTextArea("Error Log\n");
+        JScrollPane errorScrollWrapper = new JScrollPane(ErrorInfoArea);
 
         //Add to components/frames
         Frame.getContentPane().setLayout(new FlowLayout());
@@ -86,10 +93,12 @@ class MainGUI {
         Frame.getContentPane().add(FileInfoArea);
         Frame.getContentPane().add(deleteFile);
         Frame.getContentPane().add(fileWriteButton);
+        Frame.add(dumpButton);
         boundingPanel.add(new JLabel("Block Info"));
         boundingPanel.add(blockInfoArea);
         Frame.getContentPane().add(boundingPanel);
         Frame.getContentPane().add(blockAreaPanel);
+        Frame.getContentPane().add(errorScrollWrapper);
 
         //Create and add block areas
         for (int i = 0; i < blockCapacity; i++) {
@@ -101,15 +110,16 @@ class MainGUI {
             blockAreaPanel.add(BlockAreas[i]);
         }
 
-        //Resize
+        //Resize and reformat
         boundingPanel.setLayout(new GridLayout(5, 2));
         boundingPanel.setPreferredSize(new Dimension(5, 5));
         Dimension frameDimension = new Dimension();
         frameDimension.setSize(Frame.getContentPane().getPreferredSize().getWidth() - 512, Frame.getContentPane().getPreferredSize().getHeight() + (100 * (blockCapacity / 256)));
         Frame.setSize(frameDimension);
-        Frame.setResizable(false);
         blockInfoArea.setPreferredSize(new Dimension(100, Frame.getHeight()));
         Frame.revalidate();
+        ErrorInfoArea.setPreferredSize(new Dimension((int) Frame.getPreferredSize().getWidth() / 2, 100));
+        ErrorInfoArea.setEditable(false);
 
         //Listeners
         openFile.addActionListener(e -> openFile());
@@ -117,6 +127,7 @@ class MainGUI {
         FileInfoArea.addActionListener(e -> deleteFile.setEnabled(true));
         deleteFile.addActionListener(e -> deleteFile());
         fileWriteButton.addActionListener(e -> saveFile());
+        dumpButton.addActionListener(e -> dumpFATS());
 
         //final line
         Frame.setVisible(true);
@@ -139,7 +150,7 @@ class MainGUI {
             throw new RuntimeException("FATFS has not been initialized!");
         }
         if (Objects.equals(FileInfoArea.getSelectedItem(), "")) {
-            System.err.println("No File selected for saving!");
+            MainGUI.logError("No File selected for saving!");
             return false;
         } else {
             fileString = Fatfs.read((String) FileInfoArea.getSelectedItem());
@@ -159,12 +170,31 @@ class MainGUI {
         return true;
     }
 
+    private boolean dumpFATS() {
+        if (Fatfs == null) {
+            throw new RuntimeException("FATFS has not been initialized!");
+        }
+        JFileChooser fileChooser = new JFileChooser(new File(System.getProperty("user.dir")));
+        int returnValue = fileChooser.showOpenDialog(null);
+        if (returnValue == JFileChooser.APPROVE_OPTION) {
+            String savePath;
+            try {
+                savePath = fileChooser.getSelectedFile().getCanonicalPath();
+            } catch (IOException e) {
+                e.printStackTrace();
+                return false;
+            }
+            ControllerUtilities.writeFile(savePath, Fatfs.toString());
+        }
+        return true;
+    }
+
     private void writeBufferToFATFS() {
         if (Fatfs == null) {
             throw new RuntimeException("FATFS has not been initialized!");
         }
         if (Objects.equals(Buffer, "")) {
-            System.err.println("Buffer is empty!");
+            MainGUI.logError("Buffer is empty!");
         }
         Fatfs.write(BufferPath, Buffer);
         updateFrame();
@@ -175,7 +205,7 @@ class MainGUI {
             throw new RuntimeException("FATFS has not been initialized!");
         }
         if (Objects.equals(FileInfoArea.getSelectedItem(), "")) {
-            System.err.println("No File selected for deletion!");
+            MainGUI.logError("No File selected for deletion!");
         } else {
             Fatfs.drop((String) FileInfoArea.getSelectedItem());
         }

@@ -6,7 +6,7 @@ Sealed: true
 Specification-Title: 3335FS
 Specification-Vendor: TJ Challstrom
 Implementation-Title: FATFS
-Implementation-Version: 1.0.0
+Implementation-Version: 1.1.1
 Implementation-Vendor: TJ Challstrom
 Implementation-URL: https://github.com/Colonel-Rogue/3335FS
 
